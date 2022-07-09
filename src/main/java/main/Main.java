@@ -9,4 +9,3 @@ public class Main {
         SpringApplication.run(Main.class,args);
     }
 }
-    First commit - Creating Entities for PostVote, Posts, Users
