@@ -6,7 +6,8 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import java.util.Date;
+import java.sql.Timestamp;
+
 
 @Entity
 @Setter
@@ -15,15 +16,16 @@ import java.util.Date;
 @Table(name = "post_votes")
 public class PostVote {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
     private int id;
     @NotNull
-    @Column(name = "user_id")
-    private int userId;
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private User user;
     @NotNull
-    @Column(name = "post_id")
-    private int post_id;
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Post post;
     @NotNull
-    private Date time;
-    private boolean value; //TODO: Проверить что значит tinyInt
+    private Timestamp time;
+    private byte value;
 }
