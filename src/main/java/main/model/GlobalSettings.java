@@ -1,7 +1,9 @@
 package main.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -10,19 +12,21 @@ import javax.validation.constraints.NotNull;
 @Getter
 @Setter
 @Table(name = "global_settings")
+@RestController
 public class GlobalSettings {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private int id;
+    private Integer id;
 
 
-    @NotNull
-    private String code;
+    @NotNull //TODO: Поменять на YES NO
 
+    private boolean multiuserMode;
 
-    @NotNull
-    private String name;
+    @NotNull //TODO: Поменять на YES NO
+    private boolean postPreModeration;
 
-    @NotNull
-    private String value;
+    @NotNull //TODO: Поменять на YES NO
+    private boolean statisticsIsPublic;
+
 }

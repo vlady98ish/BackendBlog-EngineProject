@@ -24,11 +24,11 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)
 
-    private int id;
+    private Integer id;
 
     @NotNull
     @Column(name = "is_moderator")
-    private byte isModerator;
+    private Byte isModerator;
 
     @NotNull
     @Column(name = "reg_time")

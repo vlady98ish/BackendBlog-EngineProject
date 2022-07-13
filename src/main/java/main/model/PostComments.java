@@ -18,14 +18,15 @@ import java.util.Date;
 public class PostComments {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Integer id;
 
     @Column(name = "parent_id")
-    private int parentId;
+    private Integer parentId;
 
 
     @NotNull
     @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name="post_id")
     private Post post;
 
 

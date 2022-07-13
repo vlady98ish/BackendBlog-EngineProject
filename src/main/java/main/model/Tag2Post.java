@@ -19,15 +19,15 @@ public class Tag2Post {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Integer id;
 
 
     @Column(name = "post_id")
     @NotNull
-    private int postId;
+    private Integer postId;
 
 
     @Column(name = "tag_id")
     @NotNull
-    private int tagId;
+    private Integer tagId;
 }
