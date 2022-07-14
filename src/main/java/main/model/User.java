@@ -5,17 +5,13 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
-import javax.validation.constraints.NotNull;
-import java.sql.Timestamp;
 
+import java.time.LocalDateTime;
+import java.util.List;
 
 
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@ToString
-
 @Entity
 @Table(name = "Users")
 public class User {
@@ -24,28 +20,38 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)
 
-    private Integer id;
+    private int id;
 
-    @NotNull
-    @Column(name = "is_moderator")
-    private Byte isModerator;
 
-    @NotNull
-    @Column(name = "reg_time")
+    @Column(name = "is_moderator", nullable = false)
+    private byte isModerator;
+
+
+    @Column(name = "reg_time", nullable = false)
     @DateTimeFormat(pattern = "YYYY-MM-dd HH:mm:ss")
-    private Timestamp regTime;
-    @NotNull
+    private LocalDateTime regTime;
+    @Column(nullable = false)
     private String name;
-    @NotNull
     @Email
-
+    @Column(nullable = false)
     private String email;
-    @NotNull
+    @Column(nullable = false)
     private String password;
 
     private String code;
-
+    @Column(columnDefinition = "TEXT")
     private String photo;
+
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Post> posts;
+
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<PostComments> postComments;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<PostVote> postVotes;
 
 
 }
