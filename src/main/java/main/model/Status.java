@@ -1,5 +1,5 @@
 package main.model;
 
 public enum Status {
-    NEW,ACCEPTED,DECLINED
+    NEW, ACCEPTED, DECLINED
 }
