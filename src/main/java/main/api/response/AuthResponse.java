@@ -14,7 +14,7 @@ import java.util.HashMap;
 public class AuthResponse {
     private boolean result;
 
-    private HashMap<String,Object> users;
+    private HashMap<String,Object> user;
 
 
 

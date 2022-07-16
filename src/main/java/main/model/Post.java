@@ -7,52 +7,47 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.sql.Timestamp;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@ToString
-@Table(name="posts")
+@Table(name = "posts")
 public class Post {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Integer id;
+    private int id;
     @Column(name = "is_active")
-    private Byte isActive;
+    private byte isActive;
     @Enumerated(EnumType.STRING) //TODO: По умолчанию поставить NEW
-    @Column(name = "moderation_status")
-    @NotNull
+
+    @Column(name = "moderation_status", nullable = false, columnDefinition = "enum('NEW, 'ACCEPTED','DECLINED') default 'NEW'")
     private Status moderationStatus;
     @Column(name = "moderator_id")
-    private Integer moderatorId;
+    private int moderatorId;
     @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "user_id",nullable = false)
     private User user;
-    @NotNull
-    private Timestamp time;
-    @NotNull
-    @Type(type = "text")
+    @Column(nullable = false)
+    private LocalDateTime time;
+
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String title;
-    @NotNull
-    @Type(type = "text")
+
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String text;
-    @Column(name="view_count")
-    private Integer viewCount;
+    @Column(name = "view_count")
+    private int viewCount;
 
     @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(name="tag2post", joinColumns = {@JoinColumn(name = "post_id")}, inverseJoinColumns = {@JoinColumn(name = "tag_id")})
+    @JoinTable(name = "tag2post", joinColumns = {@JoinColumn(name = "post_id")}, inverseJoinColumns = {@JoinColumn(name = "tag_id")})
     private List<Tag> tagList;
 
-    @OneToMany
-    @JoinColumn(name = "post_id")
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<PostComments> postComments;
-    @OneToMany
-    @JoinColumn(name = "post_id")
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<PostVote> postVotes;
-
-
 
 
 }

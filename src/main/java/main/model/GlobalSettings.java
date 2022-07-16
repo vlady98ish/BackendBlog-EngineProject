@@ -12,21 +12,20 @@ import javax.validation.constraints.NotNull;
 @Getter
 @Setter
 @Table(name = "global_settings")
-@RestController
 public class GlobalSettings {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Integer id;
+    private int id;
 
 
-    @NotNull //TODO: Поменять на YES NO
+    @Column(nullable = false) //TODO: Поменять на YES NO
 
     private boolean multiuserMode;
 
-    @NotNull //TODO: Поменять на YES NO
+    @Column(nullable = false) //TODO: Поменять на YES NO
     private boolean postPreModeration;
 
-    @NotNull //TODO: Поменять на YES NO
+    @Column(nullable = false) //TODO: Поменять на YES NO
     private boolean statisticsIsPublic;
 
 }

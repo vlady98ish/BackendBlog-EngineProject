@@ -12,8 +12,8 @@ public class SettingsService {
     public SettingsResponse getGlobalSettings()
     {
         SettingsResponse settingsResponse = new SettingsResponse();
-        settingsResponse.setMultiuserMode(true);
-        settingsResponse.setPostPreModeration(false);
+        settingsResponse.setMultiuserMode(false);
+        settingsResponse.setPostPreModeration(true);
         settingsResponse.setStatisticsIsPublic(true);
 
         return settingsResponse;

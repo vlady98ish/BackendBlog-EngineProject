@@ -6,7 +6,8 @@ import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import java.util.Date;
+import java.time.LocalDateTime;
+
 
 @Entity
 @Table(name = "captcha_code")
@@ -15,20 +16,18 @@ import java.util.Date;
 public class CaptchaCode {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Integer id;
+    private int id;
 
 
-    @NotNull
-    private Date time;
+    @Column(nullable = false)
+    private LocalDateTime time;
 
-    @Type(type = "text")
-    @NotNull
+
+    @Column(nullable = false, columnDefinition = "TINYTEXT")
     private String code;
 
 
-    @NotNull
-    @Type(type = "text")
-    @Column(name = "secret_code")
+    @Column(name = "secret_code", nullable = false, columnDefinition = "TINYTEXT")
     private String secretCode;
 
 }

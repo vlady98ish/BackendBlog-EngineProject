@@ -1,43 +1,42 @@
 package main.model;
 
 
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import java.util.Date;
+import java.time.LocalDateTime;
+
 
 @Entity
 @Table(name = "post_comments")
 @Getter
 @Setter
-@EqualsAndHashCode
 public class PostComments {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private int id;
 
     @Column(name = "parent_id")
-    private Integer parentId;
+    private int parentId;
 
 
-    @NotNull
     @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name="post_id")
+    @JoinColumn(name = "post_id")
     private Post post;
 
 
-    @NotNull
     @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "user_id")
     private User user;
 
-    @NotNull
-    private Date time;
-    @Type(type = "text")
-    @NotNull
+    @Column(nullable = false)
+    private LocalDateTime time;
+
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String text;
 
 

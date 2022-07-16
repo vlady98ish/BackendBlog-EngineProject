@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 
+import java.sql.Timestamp;
 import java.util.*;
 
 
@@ -41,14 +42,14 @@ public class PostService {
         for (Post post : postList) {
             PostResponse postResponse = new PostResponse();
             postResponse.setId(post.getId());
-            postResponse.setTimestamp(post.getTime().getTime() / 1000);
+            postResponse.setTimestamp(Timestamp.valueOf(post.getTime()).getTime()/1000);
             User user = post.getUser();
 
             postResponse.setUser(new UserResponse(user.getId(), user.getName()));
             postResponse.setTitle(post.getTitle());
             postResponse.setAnnounce(post.getText().replaceAll("<(.*?)>", "").replaceAll("[\\p{P}\\p{S}]", ""));
-            postResponse.setLikeCount(getCountLikes(post.getId(),1));
-            postResponse.setDislikeCount(getCountLikes(post.getId(), -1));
+//            postResponse.setLikeCount(getCountLikes(post.getId(),1));
+//            postResponse.setDislikeCount(getCountLikes(post.getId(), -1));
             postResponse.setCommentCount(getCountComments(post.getId()));
             postResponse.setViewCount(post.getViewCount());
             responsePostsList.add(postResponse);
@@ -65,14 +66,14 @@ public class PostService {
 
     }
 
-    private Integer getCountLikes(int postId, int value) {
-        Integer countLikes = 0;
-        Optional<Integer> countOfLikes = postVotesRepository.findCountOfLikes(postId, value);
-        if (countOfLikes.isPresent()) {
-            countLikes = countOfLikes.get();
-        }
-        return countLikes;
-    }
+//    private Integer getCountLikes(int postId, int value) {
+//        Integer countLikes = 0;
+//        Optional<Integer> countOfLikes = postVotesRepository.findCountOfLikes(postId, value);
+//        if (countOfLikes.isPresent()) {
+//            countLikes = countOfLikes.get();
+//        }
+//        return countLikes;
+//    }
 
     private Integer getCountComments(int postId)
     {
