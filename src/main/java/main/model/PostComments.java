@@ -3,10 +3,10 @@ package main.model;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.Type;
+
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+
 import java.time.LocalDateTime;
 
 
@@ -19,6 +19,12 @@ public class PostComments {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String text;
+
+    @Column(nullable = false)
+    private LocalDateTime time;
 
     @Column(name = "parent_id")
     private int parentId;
@@ -33,11 +39,9 @@ public class PostComments {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @Column(nullable = false)
-    private LocalDateTime time;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
-    private String text;
+
+
 
 
 }
