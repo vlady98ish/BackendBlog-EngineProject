@@ -9,6 +9,7 @@ import main.model.User;
 import main.model.repository.PostCommentsRepository;
 import main.model.repository.PostRepository;
 import main.model.repository.PostVotesRepository;
+import main.model.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -19,6 +20,8 @@ import org.springframework.stereotype.Service;
 
 
 import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.*;
 
 
@@ -31,25 +34,30 @@ public class PostService {
     private PostVotesRepository postVotesRepository;
     @Autowired
     private PostCommentsRepository postCommentsRepository;
+    @Autowired
+    private UserRepository userRepository;
 
     public ResponseEntity<?> getPosts(int offset, int limit, String mode) {
+        LocalDateTime now = LocalDateTime.now();
         if (offset > limit) {
             return new ResponseEntity<>("Wrong offset parametr", HttpStatus.BAD_REQUEST);
         }
-
-        List<Post> postList = getLimitAndSortedPosts(offset, limit, mode);
+        int countOfActivePosts = postRepository.getCountOfActivePost(now);
+        List<Post> postList = getSortedPosts(offset, limit, mode,now);
         List<PostResponse> responsePostsList = new ArrayList<>();
         for (Post post : postList) {
             PostResponse postResponse = new PostResponse();
             postResponse.setId(post.getId());
-            postResponse.setTimestamp(Timestamp.valueOf(post.getTime()).getTime()/1000);
+            postResponse.setTimestamp(Timestamp.valueOf(post.getTime()).getTime() / 1000);
             User user = post.getUser();
 
             postResponse.setUser(new UserResponse(user.getId(), user.getName()));
             postResponse.setTitle(post.getTitle());
-            postResponse.setAnnounce(post.getText().replaceAll("<(.*?)>", "").replaceAll("[\\p{P}\\p{S}]", ""));
-//            postResponse.setLikeCount(getCountLikes(post.getId(),1));
-//            postResponse.setDislikeCount(getCountLikes(post.getId(), -1));
+            postResponse.setAnnounce(post.getText().replaceAll("<(.*?)>", "").replaceAll("[\\p{P}\\p{S}]", "").substring(0,150)+ "...");
+
+
+            postResponse.setLikeCount(getCountLikes(post.getId(), (byte) 1));
+            postResponse.setDislikeCount(getCountLikes(post.getId(), (byte) -1));
             postResponse.setCommentCount(getCountComments(post.getId()));
             postResponse.setViewCount(post.getViewCount());
             responsePostsList.add(postResponse);
@@ -57,52 +65,69 @@ public class PostService {
 
 
         CountPostsResponse countPostsResponse = new CountPostsResponse();
-        countPostsResponse.setCount(postList.size());
-        countPostsResponse.setPosts(responsePostsList);
+        countPostsResponse.setCount(countOfActivePosts);
+        countPostsResponse.setPosts(getLimitOffsetPost(responsePostsList,offset,limit));
 
 
         return new ResponseEntity<>(countPostsResponse, HttpStatus.OK);
 
 
+
+
+
     }
 
-//    private Integer getCountLikes(int postId, int value) {
-//        Integer countLikes = 0;
-//        Optional<Integer> countOfLikes = postVotesRepository.findCountOfLikes(postId, value);
-//        if (countOfLikes.isPresent()) {
-//            countLikes = countOfLikes.get();
-//        }
-//        return countLikes;
-//    }
+    private Integer getCountLikes(int postId, byte value) {
+        Integer countLikes = 0;
+        Optional<Integer> countOfLikes = postVotesRepository.findCountOfLikes(postId, value);
+        if (countOfLikes.isPresent()) {
+            countLikes = countOfLikes.get();
+        }
+        return countLikes;
+    }
 
-    private Integer getCountComments(int postId)
-    {
+    private Integer getCountComments(int postId) {
         Integer countComments = 0;
         Optional<Integer> countOfComments = postCommentsRepository.getCountOfCommentsByPostId(postId);
-        if(countOfComments.isPresent())
-        {
+        if (countOfComments.isPresent()) {
             countComments = countOfComments.get();
         }
         return countComments;
     }
 
-    public List<Post> getLimitAndSortedPosts(int offset, int limit, String mode) {
+    public List<Post> getSortedPosts(int offset, int limit, String mode,LocalDateTime time) {
         PageRequest pagination = PageRequest.of(offset, limit);
         Page<Post> posts;
         switch (mode) {
             case "popular":
-                posts = postRepository.getSortedByPopular(pagination);
+                posts = postRepository.getSortedByPopular(time,pagination);
                 break;
             case "best":
-                posts = postRepository.getSortedByBest(pagination);
+                posts = postRepository.getSortedByBest(time,pagination);
                 break;
             case "early":
-                posts = postRepository.getSortedByTime(pagination);
+                posts = postRepository.getSortedByTime(time,pagination);
+                break;
             default:
-                posts = postRepository.getSortedByRecent(pagination);
+                posts = postRepository.getSortedByRecent(time,pagination);
 
         }
 
         return posts.getContent();
+    }
+
+    private List<PostResponse> getLimitOffsetPost(List<PostResponse> postList,int offset, int limit){
+        List<PostResponse>limitedListPosts = new ArrayList<>();
+        if (offset > limit || offset>postList.size())
+        {
+            return limitedListPosts;
+        }
+        else if(limit+offset<=postList.size()){
+            limitedListPosts = postList.subList(offset,offset+limit);
+            return  limitedListPosts;
+        }
+        limitedListPosts = postList.subList(offset,postList.size());
+        return limitedListPosts;
+
     }
 }

@@ -7,11 +7,12 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class AuthService {
-        @Autowired
-        private UserRepository userRepository;
-    public AuthResponse getAuthInfo()
-    {
-        AuthResponse authResponse= new AuthResponse();
+    @Autowired
+    private UserRepository userRepository;
+
+    public AuthResponse getAuthInfo() {
+        //Пока у нас нет авторизации возвращаем false;
+        AuthResponse authResponse = new AuthResponse();
         authResponse.setResult(false);
         return authResponse;
     }

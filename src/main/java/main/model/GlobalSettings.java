@@ -1,12 +1,12 @@
 package main.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.web.bind.annotation.RestController;
+
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+
 
 @Entity
 @Getter
@@ -18,14 +18,14 @@ public class GlobalSettings {
     private int id;
 
 
-    @Column(nullable = false) //TODO: Поменять на YES NO
+    @Column(nullable = false)
 
     private boolean multiuserMode;
 
-    @Column(nullable = false) //TODO: Поменять на YES NO
+    @Column(nullable = false)
     private boolean postPreModeration;
 
-    @Column(nullable = false) //TODO: Поменять на YES NO
+    @Column(nullable = false)
     private boolean statisticsIsPublic;
 
 }

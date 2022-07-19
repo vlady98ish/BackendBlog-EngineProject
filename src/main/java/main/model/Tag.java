@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+
 import java.util.List;
 
 @Entity
@@ -19,7 +19,6 @@ public class Tag {
     private String name;
 
 
-    @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(name = "tag2post", joinColumns = {@JoinColumn(name = "tag_id")}, inverseJoinColumns = {@JoinColumn(name = "post_id")})
+    @ManyToMany(mappedBy = "tagList")
     private List<Post> postList;
 }

@@ -18,16 +18,22 @@ public class PostVote {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
 
-    private Integer id;
+    private int id;
+
+    @Column(nullable = false)
+    private LocalDateTime time;
+
+    @Column(nullable = false)
+    private byte value;
+
+
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "post_id")
+    private Post post;
 
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinColumn(name = "post_id")
-    private Post post;
-    @Column(nullable = false)
-    private LocalDateTime time;
-    @Column(nullable = false)
-    private byte value;
+
+
 }

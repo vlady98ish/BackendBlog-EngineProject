@@ -29,15 +29,15 @@ public class GeneralController {
     }
 
     @GetMapping("/settings")
-    public SettingsResponse settings()
+    public ResponseEntity<?> settings()
     {
         return settingsService.getGlobalSettings();
     }
 
-//    @GetMapping("/tag")
-//    public ResponseEntity<?> getTags(@RequestParam(defaultValue = "") String query, @RequestParam Double weight)
-//    {
-//        return tagService.getTasks(query);
-//    }
+    @GetMapping("/tag")
+    public ResponseEntity<?> getTags(@RequestParam(defaultValue = "") String query)
+    {
+        return tagService.getTasks(query);
+    }
 
 }
