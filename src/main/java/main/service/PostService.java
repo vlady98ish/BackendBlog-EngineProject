@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -111,20 +112,20 @@ public class PostService {
     }
 
     private List<Post> getSortedPosts(int offset, int limit, String mode, LocalDateTime time) {
-        PageRequest pagination = PageRequest.of(offset, limit);
+        Pageable pageable = PageRequest.of(offset, limit);
         Page<Post> posts;
         switch (mode) {
             case "popular":
-                posts = postRepository.getSortedByPopular(time, pagination);
+                posts = postRepository.getSortedByPopular(time, pageable);
                 break;
             case "best":
-                posts = postRepository.getSortedByBest(time, pagination);
+                posts = postRepository.getSortedByBest(time, pageable);
                 break;
             case "early":
-                posts = postRepository.getSortedByTime(time, pagination);
+                posts = postRepository.getSortedByTime(time, pageable);
                 break;
             default:
-                posts = postRepository.getSortedByRecent(time, pagination);
+                posts = postRepository.getSortedByRecent(time, pageable);
 
         }
 
