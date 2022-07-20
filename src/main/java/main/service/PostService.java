@@ -37,13 +37,35 @@ public class PostService {
     @Autowired
     private UserRepository userRepository;
 
-    public ResponseEntity<?> getPosts(int offset, int limit, String mode) {
+    public CountPostsResponse getPosts(int offset, int limit, String mode) {
         LocalDateTime now = LocalDateTime.now();
         if (offset > limit) {
-            return new ResponseEntity<>("Wrong offset parametr", HttpStatus.BAD_REQUEST);
+            CountPostsResponse countPostsResponse = new CountPostsResponse();
+            countPostsResponse.setCount(0);
         }
         int countOfActivePosts = postRepository.getCountOfActivePost(now);
-        List<Post> postList = getSortedPosts(offset, limit, mode,now);
+        List<Post> postList = getSortedPosts(offset, limit, mode, now);
+
+
+        return convertToPostResponse(postList, offset, limit, countOfActivePosts);
+
+
+    }
+
+    public CountPostsResponse getPostsByQuery(String query, int offset, int limit)
+    {
+        LocalDateTime now = LocalDateTime.now();
+        PageRequest pagination = PageRequest.of(offset, limit);
+        if(query.trim().isEmpty())
+        {
+            return getPosts(offset,limit,"recent");
+        }
+        int countOfQueryPosts = postRepository.getCountOfQueryPost(now,query);
+        List<Post> postList = postRepository.getPostsByQuery(now,query,pagination).getContent();
+        return convertToPostResponse(postList,offset,limit,countOfQueryPosts);
+    }
+
+    private CountPostsResponse convertToPostResponse(List<Post> postList, int offset, int limit, int countOfActivePosts) {
         List<PostResponse> responsePostsList = new ArrayList<>();
         for (Post post : postList) {
             PostResponse postResponse = new PostResponse();
@@ -53,7 +75,7 @@ public class PostService {
 
             postResponse.setUser(new UserResponse(user.getId(), user.getName()));
             postResponse.setTitle(post.getTitle());
-            postResponse.setAnnounce(post.getText().replaceAll("<(.*?)>", "").replaceAll("[\\p{P}\\p{S}]", "").substring(0,150)+ "...");
+            postResponse.setAnnounce(post.getText().replaceAll("<(.*?)>", "").replaceAll("[\\p{P}\\p{S}]", "").substring(0, 150) + "...");
 
 
             postResponse.setLikeCount(getCountLikes(post.getId(), (byte) 1));
@@ -66,15 +88,8 @@ public class PostService {
 
         CountPostsResponse countPostsResponse = new CountPostsResponse();
         countPostsResponse.setCount(countOfActivePosts);
-        countPostsResponse.setPosts(getLimitOffsetPost(responsePostsList,offset,limit));
-
-
-        return new ResponseEntity<>(countPostsResponse, HttpStatus.OK);
-
-
-
-
-
+        countPostsResponse.setPosts(getLimitOffsetPost(responsePostsList, offset, limit));
+        return countPostsResponse;
     }
 
     private Integer getCountLikes(int postId, byte value) {
@@ -95,38 +110,36 @@ public class PostService {
         return countComments;
     }
 
-    public List<Post> getSortedPosts(int offset, int limit, String mode,LocalDateTime time) {
+    private List<Post> getSortedPosts(int offset, int limit, String mode, LocalDateTime time) {
         PageRequest pagination = PageRequest.of(offset, limit);
         Page<Post> posts;
         switch (mode) {
             case "popular":
-                posts = postRepository.getSortedByPopular(time,pagination);
+                posts = postRepository.getSortedByPopular(time, pagination);
                 break;
             case "best":
-                posts = postRepository.getSortedByBest(time,pagination);
+                posts = postRepository.getSortedByBest(time, pagination);
                 break;
             case "early":
-                posts = postRepository.getSortedByTime(time,pagination);
+                posts = postRepository.getSortedByTime(time, pagination);
                 break;
             default:
-                posts = postRepository.getSortedByRecent(time,pagination);
+                posts = postRepository.getSortedByRecent(time, pagination);
 
         }
 
         return posts.getContent();
     }
 
-    private List<PostResponse> getLimitOffsetPost(List<PostResponse> postList,int offset, int limit){
-        List<PostResponse>limitedListPosts = new ArrayList<>();
-        if (offset > limit || offset>postList.size())
-        {
+    private List<PostResponse> getLimitOffsetPost(List<PostResponse> postList, int offset, int limit) {
+        List<PostResponse> limitedListPosts = new ArrayList<>();
+        if (offset > limit || offset > postList.size()) {
+            return limitedListPosts;
+        } else if (limit + offset <= postList.size()) {
+            limitedListPosts = postList.subList(offset, offset + limit);
             return limitedListPosts;
         }
-        else if(limit+offset<=postList.size()){
-            limitedListPosts = postList.subList(offset,offset+limit);
-            return  limitedListPosts;
-        }
-        limitedListPosts = postList.subList(offset,postList.size());
+        limitedListPosts = postList.subList(offset, postList.size());
         return limitedListPosts;
 
     }

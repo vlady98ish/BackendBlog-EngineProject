@@ -1,6 +1,7 @@
 package main.controller;
 
 import main.api.response.CountPostsResponse;
+import main.api.response.PostResponse;
 import main.service.PostService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,9 +25,15 @@ public class PostController {
     }
 
     @GetMapping("/post")
-    public ResponseEntity<?> getPosts(@RequestParam(defaultValue = "0") int offset, @RequestParam(defaultValue = "10") int limit,@RequestParam(defaultValue = "recent") String mode)
+    public ResponseEntity<CountPostsResponse> getPosts(@RequestParam(defaultValue = "0") int offset, @RequestParam(defaultValue = "10") int limit, @RequestParam(defaultValue = "recent") String mode)
     {
         System.out.println("We are in PostController getPosts");
-        return postService.getPosts(offset,limit,mode);
+        return ResponseEntity.ok(postService.getPosts(offset,limit,mode));
+    }
+
+    @GetMapping("/post/search")
+    public ResponseEntity<CountPostsResponse> getPostByQuery(@RequestParam String query,@RequestParam(defaultValue = "0") int offset, @RequestParam(defaultValue = "6") int limit)
+    {
+        return ResponseEntity.ok(postService.getPostsByQuery(query,offset,limit));
     }
 }

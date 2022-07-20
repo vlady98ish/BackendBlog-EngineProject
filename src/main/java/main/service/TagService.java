@@ -23,10 +23,10 @@ public class TagService {
     private PostRepository postRepository;
 
 
-    public ResponseEntity<?> getTasks(String query) {
+    public Map<String, List<TagResponse>> getTasks(String query) {
         LocalDateTime now = LocalDateTime.now();
-        Map<String, List<TagResponse>> tagsMapResponse = new LinkedHashMap<>();
-        List<TagResponse> tags = new ArrayList<>();
+
+
         List<Tag> tagList;
         int countOfActivePost = postRepository.getCountOfActivePost(now);
 
@@ -36,18 +36,24 @@ public class TagService {
             tagList = tagRepository.findByName(query);
 
         }
-        double k = getCoefficient(tagList, countOfActivePost);
+
+        return convertToMapTagResponse(tagList, countOfActivePost);
+    }
+
+    private Map<String, List<TagResponse>> convertToMapTagResponse(List<Tag> tagList, int countActivePosts) {
+        List<TagResponse> tags = new ArrayList<>();
+        double k = getCoefficient(tagList, countActivePosts);
         for (Tag tag : tagList) {
             TagResponse tagResponse = new TagResponse();
             tagResponse.setName(tag.getName());
             int countPostWithTag = tag.getPostList().size();
-            tagResponse.setWeight(calculateWeight(countPostWithTag, countOfActivePost, k));
+            tagResponse.setWeight(calculateWeight(countPostWithTag, countActivePosts, k));
             tags.add(tagResponse);
 
         }
-
-        tagsMapResponse.put("tags", tags);
-        return new ResponseEntity<>(tagsMapResponse, HttpStatus.OK);
+        Map<String, List<TagResponse>> listMap = new LinkedHashMap<>();
+        listMap.put("tags", tags);
+        return listMap;
     }
 
 

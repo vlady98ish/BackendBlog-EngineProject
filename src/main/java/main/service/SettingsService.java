@@ -13,13 +13,13 @@ public class SettingsService {
     @Autowired
     private GlobalSettingsRepository globalSettingsRepository;
 
-    public ResponseEntity<?> getGlobalSettings() {
+    public SettingsResponse getGlobalSettings() {
         GlobalSettings globalSettings = globalSettingsRepository.findAll().stream().findFirst().orElse(new GlobalSettings());
         SettingsResponse settingsResponse = new SettingsResponse();
         settingsResponse.setMultiuserMode(globalSettings.isMultiuserMode());
         settingsResponse.setStatisticsIsPublic(globalSettings.isStatisticsIsPublic());
         settingsResponse.setPostPreModeration(globalSettings.isPostPreModeration());
 
-        return new ResponseEntity<>(settingsResponse, HttpStatus.OK);
+        return settingsResponse;
     }
 }

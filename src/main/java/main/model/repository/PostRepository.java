@@ -34,4 +34,11 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
     @Query("Select count(p) from Post as p where p.isActive = 1 and p.moderationStatus = 'ACCEPTED' and p.time<=?1")
     Integer getCountOfActivePost(LocalDateTime time);
 
+    @Query("Select count(p) from Post as p where p.isActive = 1 and p.moderationStatus = 'ACCEPTED' and p.time<=?1 and p.text LIKE ?2%")
+    Integer getCountOfQueryPost(LocalDateTime time, String query);
+
+
+    @Query("From Post as post WHERE post.isActive = 1 and post.moderationStatus = 'ACCEPTED' and post.time<=?1 and post.text LIKE ?2%")
+    Page<Post> getPostsByQuery(LocalDateTime time,String query,PageRequest pageRequest);
+
 }

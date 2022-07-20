@@ -2,6 +2,7 @@ package main.controller;
 
 import main.api.response.InitResponse;
 import main.api.response.SettingsResponse;
+import main.api.response.TagResponse;
 import main.service.SettingsService;
 import main.service.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
@@ -29,15 +33,15 @@ public class GeneralController {
     }
 
     @GetMapping("/settings")
-    public ResponseEntity<?> settings()
+    public ResponseEntity<SettingsResponse> settings()
     {
-        return settingsService.getGlobalSettings();
+        return ResponseEntity.ok(settingsService.getGlobalSettings());
     }
 
     @GetMapping("/tag")
-    public ResponseEntity<?> getTags(@RequestParam(defaultValue = "") String query)
+    public ResponseEntity<Map<String, List<TagResponse>>> getTags(@RequestParam(defaultValue = "") String query)
     {
-        return tagService.getTasks(query);
+        return ResponseEntity.ok(tagService.getTasks(query));
     }
 
 }
