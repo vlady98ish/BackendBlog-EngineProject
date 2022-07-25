@@ -39,7 +39,7 @@ public class TagService {
 
         return convertToMapTagResponse(tagList, countOfActivePost);
     }
-
+    //TODO:MAPPER
     private Map<String, List<TagResponse>> convertToMapTagResponse(List<Tag> tagList, int countActivePosts) {
         List<TagResponse> tags = new ArrayList<>();
         double k = getCoefficient(tagList, countActivePosts);
@@ -56,14 +56,14 @@ public class TagService {
         return listMap;
     }
 
-
+    //TODO:MAPPER
     private double calculateWeight(int countPostWithTag, int countAllPost, double coefficient) {
         double dWeightTag = (double) countPostWithTag / countAllPost;
 
 
         return dWeightTag * coefficient;
     }
-
+    //TODO:MAPPER
     private double getCoefficient(List<Tag> tagList, int countPosts) {
 
         List<Integer> countOfPostsByTag = new ArrayList<>();

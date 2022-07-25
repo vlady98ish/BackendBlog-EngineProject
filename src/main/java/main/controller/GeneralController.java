@@ -1,5 +1,6 @@
 package main.controller;
 
+import main.api.response.CalendarResponse;
 import main.api.response.InitResponse;
 import main.api.response.SettingsResponse;
 import main.api.response.TagResponse;
@@ -49,9 +50,9 @@ public class GeneralController {
     }
 
     @GetMapping("/calendar")
-    public ResponseEntity<?> getCalendar(@RequestParam(defaultValue = "0") int year)
+    public ResponseEntity<CalendarResponse> getCalendar(@RequestParam(defaultValue = "0") int year)
     {
-
+        return ResponseEntity.ok(calendarService.getCalendar(year));
     }
 
 }

@@ -5,17 +5,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
-import java.util.Map;
-
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CalendarResponse {
-    private List<Integer> years;
-
-    private Map<String,Long> posts;
-
+public class CommentsResponse {
+    private int id;
+    private Long timestamp;
+    private String text;
+    private UserResponse user;
 
 }

@@ -1,21 +1,19 @@
 package main.controller;
 
+import main.api.request.RegisterRequest;
 import main.service.AuthService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
-    private final AuthService authService;
+    @Autowired
+    private AuthService authService;
 
-
-    public AuthController(AuthService authService)
-    {
-        this.authService=authService;
-    }
 
 
     /*Cтатус Авторизации
@@ -25,5 +23,17 @@ public class AuthController {
     public ResponseEntity<?> getAuth()
     {
         return  null;
+    }
+
+
+    @GetMapping("/captcha")
+    public ResponseEntity<Map<String,String>> getCaptcha()
+    {
+        return ResponseEntity.ok(authService.getCaptcha());
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<Map<String,Object>> authRegistr(@RequestBody RegisterRequest registerRequest){
+        return ResponseEntity.ok(authService.authRegister(registerRequest));
     }
 }
