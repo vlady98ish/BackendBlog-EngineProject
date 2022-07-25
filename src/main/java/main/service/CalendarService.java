@@ -6,9 +6,11 @@ import main.model.repository.PostRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.criteria.CriteriaBuilder;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class CalendarService {
@@ -29,15 +31,36 @@ public class CalendarService {
         }
         List<Post> postList = postRepository.getActivePosts(now);
 
+
+
+
+        return convertToCalendarResponse(postList,tempYear);
+
     }
 
-    private List<Post> getPostByYear(List<Post> postList, int year)
+    private CalendarResponse convertToCalendarResponse(List<Post> postList,int year)
     {
-        List<Post> postsListByYear = new ArrayList<>();
-        for(Post post: postList)
-        {
-            if(post.getTime().getYear() == year) postsListByYear.add(post);
-        }
-        return postsListByYear;
+        CalendarResponse calendarResponse = new CalendarResponse();
+        List<Integer> years;
+        Map<String,Long> mapOfPostDates = getMapOfPostDatesCount(postList,year);
+        years = getListOfYears(postList);
+        calendarResponse.setPosts(mapOfPostDates);
+        calendarResponse.setYears(years);
+        return calendarResponse;
     }
+
+    private List<Integer> getListOfYears(List<Post> postList)
+    {
+        List<Integer> yearsList;
+        yearsList = postList.stream().map(Post-> Post.getTime().getYear()).distinct().sorted(Comparator.naturalOrder()).collect(Collectors.toList());
+
+        return yearsList;
+    }
+
+    private Map<String, Long> getMapOfPostDatesCount(List<Post> postList, int year){
+        List<Post> specificYearPostList = postList.stream().filter(p -> p.getTime().getYear() == year).collect(Collectors.toList());
+        return specificYearPostList.stream().collect(Collectors.groupingBy(p->p.getTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")),Collectors.counting()));
+    }
+
+
 }

@@ -1,29 +1,25 @@
 package main.service;
 
-import main.api.response.CountPostsResponse;
-import main.api.response.PostResponse;
-import main.api.response.UserResponse;
+import main.api.response.*;
 import main.model.Post;
 
+import main.model.PostComments;
+import main.model.Tag;
 import main.model.User;
-import main.model.repository.PostCommentsRepository;
-import main.model.repository.PostRepository;
-import main.model.repository.PostVotesRepository;
-import main.model.repository.UserRepository;
+import main.model.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -38,12 +34,12 @@ public class PostService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private TagRepository tagRepository;
+
     public CountPostsResponse getPosts(int offset, int limit, String mode) {
         LocalDateTime now = LocalDateTime.now();
-        if (offset > limit) {
-            CountPostsResponse countPostsResponse = new CountPostsResponse();
-            countPostsResponse.setCount(0);
-        }
+
         int countOfActivePosts = postRepository.getCountOfActivePost(now);
         List<Post> postList = getSortedPosts(offset, limit, mode, now);
 
@@ -55,8 +51,9 @@ public class PostService {
 
     public CountPostsResponse getPostsByQuery(String query, int offset, int limit)
     {
+
         LocalDateTime now = LocalDateTime.now();
-        PageRequest pagination = PageRequest.of(offset, limit);
+        Pageable pagination = PageRequest.of(offset, limit);
         if(query.trim().isEmpty())
         {
             return getPosts(offset,limit,"recent");
@@ -66,6 +63,80 @@ public class PostService {
         return convertToPostResponse(postList,offset,limit,countOfQueryPosts);
     }
 
+    public CountPostsResponse getPostByDate(String date,int offset, int limit )
+    {
+        LocalDateTime now = LocalDateTime.now();
+
+        List<Post> postList = postRepository.getActivePosts(now);
+        postList = postList.stream().filter(post -> post.getTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")).equals(date)).collect(Collectors.toList());
+        int count = postList.size();
+        return convertToPostResponse(postList,offset,limit,count);
+    }
+
+    public CountPostsResponse getPostByTag(String tag,int offset, int limit){
+        LocalDateTime now = LocalDateTime.now();
+        Pageable pagination = PageRequest.of(offset, limit);
+        List<Post> postList = postRepository.getPostsByTag(now,tag,pagination).getContent();
+        int countOfPostTags = postRepository.getCountOfPostsByTag(now,tag);
+        return convertToPostResponse(postList,offset,limit,countOfPostTags);
+    }
+
+    public PostByID getPostBtId(int id)
+    {
+        LocalDateTime now = LocalDateTime.now();
+        Post post = postRepository.getPostById(now,id);
+        if(post== null){
+            return null;
+        }
+        return convertToPostByID(post);
+
+
+    }
+    //TODO: прописать функционал для изменения просмотров
+    private PostByID convertToPostByID(Post post)
+    {
+        PostByID postByID = new PostByID();
+        postByID.setId(post.getId());
+        postByID.setTimestamp(Timestamp.valueOf(post.getTime()).getTime() / 1000);
+        byte active  = post.getIsActive();
+        postByID.setActive(active == 1);
+        UserResponse userResponse = new UserResponse(post.getUser().getId(),post.getUser().getName());
+        postByID.setUser(userResponse);
+        postByID.setTitle(post.getTitle());
+        postByID.setText(post.getText());
+        postByID.setLikeCount(getCountLikes(post.getId(),(byte)1));
+        postByID.setDislikeCount(getCountLikes(post.getId(),(byte)-1));
+        postByID.setViewCount(post.getViewCount());
+        postByID.setPostComments(convertToListCommentResponse(post.getPostComments()));
+        postByID.setTags(convertToTagsNamesList(post.getTagList()));
+        return postByID;
+
+    }
+    //TODO:MAPPER
+    private List<CommentsResponse> convertToListCommentResponse(List<PostComments> postComments){
+        List<CommentsResponse> commentsResponses = new ArrayList<>();
+
+        for(PostComments postComments1: postComments){
+            int id  = postComments1.getId();
+            Long timestamp  = Timestamp.valueOf(postComments1.getTime()).getTime() / 1000;
+            String text = postComments1.getText();
+            //TODO: ADD PHOTO TO USER
+            UserResponse userResponse = new UserResponse(postComments1.getUser().getId(), postComments1.getUser().getName());
+            commentsResponses.add(new CommentsResponse(id,timestamp,text,userResponse));
+        }
+        return commentsResponses;
+    }
+    //TODO:MAPPER
+    private List<String> convertToTagsNamesList(List<Tag> tagList){
+        List<String> tagsNamesList = new ArrayList<>();
+        for (Tag tag:tagList){
+            tagsNamesList.add(tag.getName());
+        }
+        return tagsNamesList;
+    }
+
+
+    //TODO:MAPPER
     private CountPostsResponse convertToPostResponse(List<Post> postList, int offset, int limit, int countOfActivePosts) {
         List<PostResponse> responsePostsList = new ArrayList<>();
         for (Post post : postList) {
@@ -92,7 +163,7 @@ public class PostService {
         countPostsResponse.setPosts(getLimitOffsetPost(responsePostsList, offset, limit));
         return countPostsResponse;
     }
-
+    //TODO:MAPPER
     private Integer getCountLikes(int postId, byte value) {
         Integer countLikes = 0;
         Optional<Integer> countOfLikes = postVotesRepository.findCountOfLikes(postId, value);
@@ -101,7 +172,7 @@ public class PostService {
         }
         return countLikes;
     }
-
+    //TODO:MAPPER
     private Integer getCountComments(int postId) {
         Integer countComments = 0;
         Optional<Integer> countOfComments = postCommentsRepository.getCountOfCommentsByPostId(postId);

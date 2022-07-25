@@ -26,8 +26,9 @@ public class PostComments {
     @Column(nullable = false)
     private LocalDateTime time;
 
-    @Column(name = "parent_id")
-    private int parentId;
+    @ManyToOne
+    @JoinColumn(name="parent_id", referencedColumnName = "id")
+    private PostComments parentComment;
 
 
     @ManyToOne(cascade = CascadeType.ALL)
