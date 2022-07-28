@@ -27,7 +27,7 @@ public class PostComments {
     private LocalDateTime time;
 
     @ManyToOne
-    @JoinColumn(name="parent_id", referencedColumnName = "id")
+    @JoinColumn(name = "parent_id", referencedColumnName = "id")
     private PostComments parentComment;
 
 
@@ -39,10 +39,6 @@ public class PostComments {
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id")
     private User user;
-
-
-
-
 
 
 }

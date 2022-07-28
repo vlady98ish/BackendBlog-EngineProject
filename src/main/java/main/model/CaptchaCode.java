@@ -29,9 +29,4 @@ public class CaptchaCode {
     private LocalDateTime time;
 
 
-
-
-
-
-
 }

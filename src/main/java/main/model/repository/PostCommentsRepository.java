@@ -12,6 +12,8 @@ import java.util.Optional;
 
 @Repository
 public interface PostCommentsRepository extends JpaRepository<PostComments, Integer> {
-    @Query("SELECT count(pc) From PostComments as pc where pc.post.id = ?1")
+    @Query("SELECT count(pc) " +
+            "From PostComments as pc " +
+            "where pc.post.id = ?1")
     Optional<Integer> getCountOfCommentsByPostId(int postId);
 }

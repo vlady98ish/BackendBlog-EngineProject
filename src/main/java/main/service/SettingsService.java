@@ -14,7 +14,11 @@ public class SettingsService {
     private GlobalSettingsRepository globalSettingsRepository;
 
     public SettingsResponse getGlobalSettings() {
-        GlobalSettings globalSettings = globalSettingsRepository.findAll().stream().findFirst().orElse(new GlobalSettings());
+        GlobalSettings globalSettings = globalSettingsRepository
+                .findAll()
+                .stream()
+                .findFirst()
+                .orElse(new GlobalSettings());
         SettingsResponse settingsResponse = new SettingsResponse();
         settingsResponse.setMultiuserMode(globalSettings.isMultiuserMode());
         settingsResponse.setStatisticsIsPublic(globalSettings.isStatisticsIsPublic());

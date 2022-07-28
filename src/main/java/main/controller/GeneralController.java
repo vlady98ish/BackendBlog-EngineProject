@@ -1,5 +1,6 @@
 package main.controller;
 
+import lombok.AllArgsConstructor;
 import main.api.response.CalendarResponse;
 import main.api.response.InitResponse;
 import main.api.response.SettingsResponse;
@@ -20,38 +21,35 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
+@AllArgsConstructor
 public class GeneralController {
     @Autowired
     private SettingsService settingsService;
     @Autowired
-    private  InitResponse initResponse;
+    private InitResponse initResponse;
     @Autowired
-    private  TagService tagService;
+    private TagService tagService;
     @Autowired
     private CalendarService calendarService;
 
 
     @GetMapping("/init")
-    public InitResponse init()
-    {
+    public InitResponse init() {
         return initResponse;
     }
 
     @GetMapping("/settings")
-    public ResponseEntity<SettingsResponse> settings()
-    {
+    public ResponseEntity<SettingsResponse> settings() {
         return ResponseEntity.ok(settingsService.getGlobalSettings());
     }
 
     @GetMapping("/tag")
-    public ResponseEntity<Map<String, List<TagResponse>>> getTags(@RequestParam(defaultValue = "") String query)
-    {
+    public ResponseEntity<Map<String, List<TagResponse>>> getTags(@RequestParam(defaultValue = "") String query) {
         return ResponseEntity.ok(tagService.getTasks(query));
     }
 
     @GetMapping("/calendar")
-    public ResponseEntity<CalendarResponse> getCalendar(@RequestParam(defaultValue = "0") int year)
-    {
+    public ResponseEntity<CalendarResponse> getCalendar(@RequestParam(defaultValue = "0") int year) {
         return ResponseEntity.ok(calendarService.getCalendar(year));
     }
 

@@ -10,7 +10,10 @@ import java.util.Optional;
 
 @Repository
 public interface PostVotesRepository extends JpaRepository<PostVote,Integer> {
-    @Query("Select count(pv) from PostVote as pv where pv.post.id = ?1 and pv.value =?2")
+    @Query("Select count(pv) " +
+            "from PostVote as pv " +
+            "where pv.post.id = ?1 " +
+            "and pv.value =?2")
     Optional<Integer> findCountOfLikes(int postId, byte value);
 
 }
