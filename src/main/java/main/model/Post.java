@@ -18,9 +18,10 @@ public class Post {
     private int id;
     @Column(name = "is_active")
     private byte isActive;
-    @Enumerated(EnumType.STRING) //TODO: По умолчанию поставить NEW
+     //TODO: По умолчанию поставить NEW
 
     @Column(name = "moderation_status", nullable = false)
+    @Enumerated(EnumType.STRING)
     private Status moderationStatus;
 
     @Column(columnDefinition = "TEXT", nullable = false)
@@ -41,11 +42,12 @@ public class Post {
 
 
     @ManyToOne(cascade = CascadeType.MERGE)
-    @JoinColumn(name = "moderator_id", referencedColumnName="id")
+    @JoinColumn(name = "moderator_id", referencedColumnName = "id")
     private User moderatedBy;
 
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinTable(name = "tag2post", joinColumns = {@JoinColumn(name = "post_id")}, inverseJoinColumns = {@JoinColumn(name = "tag_id")})
+    @JoinTable(name = "tag2post", joinColumns = {@JoinColumn(name = "post_id")}
+            , inverseJoinColumns = {@JoinColumn(name = "tag_id")})
     private List<Tag> tagList;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
