@@ -1,5 +1,6 @@
 package main.service;
 
+import lombok.AllArgsConstructor;
 import main.api.response.CalendarResponse;
 import main.model.Post;
 import main.model.repository.PostRepository;
@@ -13,6 +14,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@AllArgsConstructor
 public class CalendarService {
     @Autowired
     private PostRepository postRepository;

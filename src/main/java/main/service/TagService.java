@@ -1,21 +1,19 @@
 package main.service;
 
+import lombok.AllArgsConstructor;
 import main.api.response.TagResponse;
-import main.model.Post;
 import main.model.Tag;
 import main.model.repository.PostRepository;
 import main.model.repository.TagRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
 
 
 @Service
+@AllArgsConstructor
 public class TagService {
     @Autowired
     private TagRepository tagRepository;
@@ -33,7 +31,7 @@ public class TagService {
         if (query.equals("")) {
             tagList = tagRepository.findAll();
         } else {
-            tagList = tagRepository.findByName(query);
+            tagList = tagRepository.findAllByName(query);
 
         }
 

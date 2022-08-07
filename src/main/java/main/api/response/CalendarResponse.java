@@ -15,7 +15,7 @@ import java.util.Map;
 public class CalendarResponse {
     private List<Integer> years;
 
-    private Map<String,Long> posts;
+    private Map<String, Long> posts;
 
 
 }

@@ -1,8 +1,10 @@
 package main.controller;
 
 import lombok.AllArgsConstructor;
+import main.api.request.PostRequest;
 import main.api.response.CountPostsResponse;
 import main.api.response.PostByID;
+import main.service.LikeService;
 import main.service.PostService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/post")
@@ -21,6 +24,7 @@ import java.security.Principal;
 public class PostController {
 
     private final PostService postService;
+    private final LikeService likeService;
 
 
     @GetMapping("")
@@ -74,6 +78,31 @@ public class PostController {
     @PreAuthorize("hasAuthority('user:write')")
     public ResponseEntity<CountPostsResponse> getMy(@RequestParam String status, @RequestParam(defaultValue = "0") int offset, @RequestParam(defaultValue = "10") int limit, Principal principal) {
         return ResponseEntity.ok(postService.getMyPosts(status, offset, limit, principal.getName()));
+    }
+
+    @PostMapping("")
+    @PreAuthorize("hasAuthority('user:write')")
+    public ResponseEntity<?> postPost(@RequestBody PostRequest postRequest, Principal principal) {
+        return ResponseEntity.ok(postService.postPost(postRequest, principal.getName()));
+    }
+
+    @PutMapping("/{ID}")
+    @PreAuthorize("hasAuthority('user:write')")
+    public ResponseEntity<?> redactPostById(@PathVariable int ID, @RequestBody PostRequest postRequest, Principal principal) {
+        return ResponseEntity.ok(postService.getRedactPostById(ID, postRequest, principal.getName()));
+    }
+
+    @PostMapping("/like")
+    @PreAuthorize("hasAuthority('user:write')")
+    public ResponseEntity<Map<String, Object>> like(@RequestBody Map<String, Integer> postId, Principal principal) {
+        return ResponseEntity.ok(likeService.postLike(postId.get("post_id"), principal.getName()));
+    }
+
+
+    @PostMapping("/dislike")
+    @PreAuthorize("hasAuthority('user:write')")
+    public ResponseEntity<Map<String, Object>> dislike(@RequestBody Map<String, Integer> postId, Principal principal) {
+        return ResponseEntity.ok(likeService.postDisLike(postId.get("post_id"), principal.getName()));
     }
 
 

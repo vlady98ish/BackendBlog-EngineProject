@@ -3,6 +3,7 @@ package main.service;
 import com.github.cage.Cage;
 import com.github.cage.GCage;
 import lombok.AllArgsConstructor;
+import main.api.request.CodeRequest;
 import main.api.request.LoginRequest;
 import main.api.request.RegisterRequest;
 import main.api.response.AuthResponse;
@@ -11,37 +12,51 @@ import main.api.response.UserLoginResponse;
 import main.model.CaptchaCode;
 import main.model.User;
 import main.model.repository.CaptchaCodeRepository;
+import main.model.repository.GlobalSettingsRepository;
+import main.model.repository.PostRepository;
 import main.model.repository.UserRepository;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
+import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+
+import java.net.InetAddress;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
+
 
 @Service
 @AllArgsConstructor
 public class AuthService {
+    @Autowired
+    private Environment environment;
     @Autowired
     private UserRepository userRepository;
     @Autowired
     private CaptchaCodeRepository captchaCodeRepository;
     @Autowired
     private AuthenticationManager authenticationManager;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    @Autowired
+    private EmailService emailService;
+    @Autowired
+    private SettingsService settingsService;
+
+    @Autowired
+    private PostRepository postRepository;
 
     public LoginResponse getLoginResponse(String email) {
         main.model.User currentUser = userRepository.findUserByEmail(email).orElseThrow(() -> new UsernameNotFoundException(email));
@@ -50,6 +65,10 @@ public class AuthService {
         userResponse.setModeration(currentUser.getIsModerator() == 1);
         userResponse.setId(currentUser.getId());
         userResponse.setName(currentUser.getName());
+        userResponse.setPhoto(currentUser.getPhoto());
+        if (currentUser.getIsModerator() == 1) {
+            userResponse.setModerationCount(postRepository.countModeratedPost());
+        }
         LoginResponse loginResponse = new LoginResponse();
         loginResponse.setResult(true);
         loginResponse.setUserResponse(userResponse);
@@ -103,6 +122,9 @@ public class AuthService {
     }
 
     public Map<String, Object> authRegister(RegisterRequest registerRequest) {
+        if (!settingsService.getGlobalSettings().isMultiuserMode()) {
+            return null;
+        }
         boolean result = true;
         Map<String, Object> mapResponse = new LinkedHashMap<>();
         Map<String, String> errorsResponse = new LinkedHashMap<>();
@@ -120,14 +142,11 @@ public class AuthService {
             errorsResponse.put("password", "Пароль короче 6-ти символов");
             result = false;
         }
-        Optional<CaptchaCode> captchaCode = captchaCodeRepository
-                .getCaptchaCodeBySecretCode(registerRequest.getCaptchaSecret());
-        if (captchaCode.isPresent()) {
-            if (!registerRequest.getCaptcha().equals(captchaCode.get().getCode())) {
-                errorsResponse.put("captcha", "Код с картинки введён неверно");
-                result = false;
-            }
+        if (!checkCaptcha(registerRequest.getCaptchaSecret())) {
+            errorsResponse.put("captcha", "Код с картинки введён неверно");
+            result = false;
         }
+
 
         if (result) {
             User newUser = new User();
@@ -135,10 +154,10 @@ public class AuthService {
             newUser.setEmail(registerRequest.getEmail());
             newUser.setIsModerator((byte) 0);
             newUser.setRegTime(LocalDateTime.now());
-            newUser.setPassword(registerRequest.getPassword());
+            newUser.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
             newUser.setCode(registerRequest.getCaptcha());
-            newUser.setPhoto(null);
-            //TODO: Encrypto password
+
+
             userRepository.save(newUser);
             return Map.of("result", result);
         }
@@ -147,6 +166,77 @@ public class AuthService {
 
         return mapResponse;
 
+
+    }
+
+    private boolean checkCaptcha(String captcha) {
+        boolean result = true;
+        Optional<CaptchaCode> captchaCode = captchaCodeRepository
+                .getCaptchaCodeBySecretCode(captcha);
+        if (captchaCode.isPresent()) {
+            if (!captcha.equals(captchaCode.get().getCode())) {
+
+                result = false;
+            }
+        }
+
+        return result;
+    }
+
+    public Map<String, Object> restore(String email) {
+        Optional<User> optionalUser = userRepository.findUserByEmail(email);
+        if (optionalUser.isEmpty()) {
+            return Map.of("result", false);
+        }
+        User user = optionalUser.get();
+
+
+        String code = UUID.randomUUID().toString();
+
+
+        user.setCode(code);
+        userRepository.save(user);
+        final String port = "8080";
+        final String hostName = InetAddress.getLoopbackAddress().getHostName();
+        final String url = String.format("http://%s:%s", hostName, port);
+        emailService.send(email, "Restore password", String.format("Для восстановления пароля, " +
+                "пройдите по этой ссылке: %s/login/change-password/%s", url, code));
+        return Map.of("result", true);
+
+
+    }
+
+
+    public Map<String, Object> password(CodeRequest codeRequest) {
+        boolean result = true;
+        Map<String, Object> response = new LinkedHashMap<>();
+        Map<String, String> errors = new LinkedHashMap<>();
+
+
+        if (!checkCaptcha(codeRequest.getCaptchaSecret())) {
+            errors.put("captcha", "Код с картинки введён неверно");
+            result = false;
+        }
+        if (codeRequest.getPassword().length() < 6) {
+            errors.put("password", "Пароль короче 6-ти символов");
+            result = false;
+        }
+
+        User user = userRepository.findUserByCode(codeRequest.getCode());
+
+        if (user == null) {
+            errors.put("code", "Ссылка для восстановления пароля устарела." +
+                    "<a href=\"/auth/restore\"> Запросить ссылку снова");
+            result = false;
+        }
+        response.put("result", result);
+        if (!result) {
+            response.put("errors", errors);
+        } else {
+            user.setCode(null);
+            user.setPassword(passwordEncoder.encode(codeRequest.getPassword()));
+        }
+        return response;
 
     }
 }

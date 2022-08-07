@@ -1,14 +1,16 @@
 package main.service;
 
+import lombok.AllArgsConstructor;
+import main.api.request.SettingsRequest;
 import main.api.response.SettingsResponse;
 import main.model.GlobalSettings;
 import main.model.repository.GlobalSettingsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+
 import org.springframework.stereotype.Service;
 
 @Service
+@AllArgsConstructor
 public class SettingsService {
     @Autowired
     private GlobalSettingsRepository globalSettingsRepository;
@@ -25,5 +27,14 @@ public class SettingsService {
         settingsResponse.setPostPreModeration(globalSettings.isPostPreModeration());
 
         return settingsResponse;
+    }
+
+    public void setGlobalSettings(SettingsRequest settingsRequest) {
+        globalSettingsRepository.deleteAll();
+        GlobalSettings globalSettings = new GlobalSettings();
+        globalSettings.setMultiuserMode(settingsRequest.isMultiuserMode());
+        globalSettings.setPostPreModeration(settingsRequest.isPostPreModeration());
+        globalSettings.setStatisticsIsPublic(settingsRequest.isStatisticsIsPublic());
+        globalSettingsRepository.save(globalSettings);
     }
 }

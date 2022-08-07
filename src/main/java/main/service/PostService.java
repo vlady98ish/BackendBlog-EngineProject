@@ -1,6 +1,9 @@
 package main.service;
 
 import lombok.AllArgsConstructor;
+
+import main.api.request.ModeratorDecisionRequest;
+import main.api.request.PostRequest;
 import main.api.response.*;
 import main.model.*;
 
@@ -11,10 +14,15 @@ import org.springframework.data.domain.PageRequest;
 
 import org.springframework.data.domain.Pageable;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 
+import java.io.File;
+import java.security.Principal;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -35,16 +43,21 @@ public class PostService {
     private UserRepository userRepository;
     @Autowired
     private AuthService authService;
+    @Autowired
+    private TagRepository tagRepository;
+    @Autowired
+    private SettingsService settingsService;
 
 
     public CountPostsResponse getPosts(int offset, int limit, String mode) {
         LocalDateTime now = LocalDateTime.now();
 
-        int countOfActivePosts = postRepository.getCountOfActivePost(now);
-        List<Post> postList = getSortedPosts(offset, limit, mode, now);
+
+        Page<Post> postPage = getSortedPosts(offset, limit, mode, now);
+        int countOfActivePosts = (int) postPage.getTotalElements();
 
 
-        return convertToPostResponse(postList, offset, limit, countOfActivePosts);
+        return convertToPostResponse(postPage.getContent(), countOfActivePosts);
 
 
     }
@@ -52,40 +65,44 @@ public class PostService {
     public CountPostsResponse getPostsByQuery(String query, int offset, int limit) {
 
         LocalDateTime now = LocalDateTime.now();
-        Pageable pagination = PageRequest.of(offset, limit);
+        Pageable pageable = PageRequest.of(offset / limit, limit);
         if (query.trim().isEmpty()) {
             return getPosts(offset, limit, "recent");
         }
-        int countOfQueryPosts = postRepository.getCountOfQueryPost(now, query);
-        List<Post> postList = postRepository.getPostsByQuery(now, query, pagination).getContent();
-        return convertToPostResponse(postList, offset, limit, countOfQueryPosts);
+
+        Page<Post> postList = postRepository.getPostsByQuery(now, query, pageable);
+        int countOfQueryPosts = (int) postList.getTotalElements();
+        return convertToPostResponse(postList.getContent(), countOfQueryPosts);
     }
 
     public CountPostsResponse getPostByDate(String date, int offset, int limit) {
         LocalDateTime now = LocalDateTime.now();
-
-        List<Post> postList = postRepository.getActivePosts(now);
+        Pageable pageable = PageRequest.of(offset / limit, limit);
+        Page<Post> postPage = postRepository.getActivePostsPage(now, pageable);
+        List<Post> postList = postPage.getContent();
         postList = postList
                 .stream()
                 .filter(post -> post.getTime()
                         .format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
                         .equals(date))
                 .collect(Collectors.toList());
-        int count = postList.size();
-        return convertToPostResponse(postList, offset, limit, count);
+        int count = (int) postPage.getTotalElements();
+        return convertToPostResponse(postList, count);
     }
 
     public CountPostsResponse getPostByTag(String tag, int offset, int limit) {
         LocalDateTime now = LocalDateTime.now();
-        Pageable pagination = PageRequest.of(offset, limit);
+        Pageable pagination = PageRequest.of(offset / limit, limit);
         List<Post> postList = postRepository.getPostsByTag(now, tag, pagination).getContent();
         int countOfPostTags = postRepository.getCountOfPostsByTag(now, tag);
-        return convertToPostResponse(postList, offset, limit, countOfPostTags);
+        return convertToPostResponse(postList, countOfPostTags);
     }
 
+
+    //TODO: Почему выбивает ошибку если юзер не зареган
     public PostByID getPostBtId(int id, String email) {
         LocalDateTime now = LocalDateTime.now();
-        Post post = postRepository.getPostById(now, id);
+        Post post = postRepository.getPostByIdAndTime(now, id);
         if (post == null) {
             return null;
         }
@@ -119,9 +136,9 @@ public class PostService {
         }
 
 
-        List<Post> postList = getPostsByModeratingStatus(offset, limit, status, sessionUser.getId());
-        int countOfPosts = getCountOfModerationPost(sessionUser.getId(), status);
-        return convertToPostResponse(postList, offset, limit, countOfPosts);
+        Page<Post> postList = getPostsByModeratingStatus(offset, limit, status, sessionUser.getId());
+        int countOfPosts = (int) postList.getTotalElements();
+        return convertToPostResponse(postList.getContent(), countOfPosts);
     }
 
 
@@ -134,30 +151,154 @@ public class PostService {
             return null;
         }
 
-        List<Post> postList = getPostsByUserStatus(offset, limit, status, sessionUser.getId());
-        int count = getCountOfPosts(status, sessionUser.getId());
-        return convertToPostResponse(postList, offset, limit, count);
+        Page<Post> postList = getPostsByUserStatus(offset, limit, status, sessionUser.getId());
+        int count = (int) postList.getTotalElements();
+        return convertToPostResponse(postList.getContent(), count);
     }
 
-    private List<Post> getPostsByUserStatus(int offset, int limit, String status, int id) {
-        LocalDateTime now = LocalDateTime.now();
-        Pageable pageable = PageRequest.of(offset, limit);
-        Page<Post> posts;
-        if (status.equals("inactive")) {
-            return postRepository.getMyNotActivePosts(id, pageable).getContent();
+    public Map<String, Object> postPost(PostRequest postRequest, String email) {
+        Post post = new Post();
+        User sessionUser = userRepository.findUserByEmail(email).get();
+
+        Map<String, Object> fullResponse = isValidTextAndTitle(postRequest.getText(), postRequest.getTitle());
+        if (((boolean) fullResponse.get("result"))) {
+
+            postRepository.save(buildPost(postRequest, post, sessionUser, convertTags(postRequest.getTags())));
         }
 
-        return postRepository.getMyActivePosts(status, id, pageable).getContent();
+        return fullResponse;
+
     }
 
-    private int getCountOfPosts(String status, int id) {
-        return status.equals("inactive")
-                ? postRepository.countMyNotActivePosts(id)
-                : postRepository.countMyActivePost(status, id);
+
+    public Map<String, Object> getRedactPostById(int ID, PostRequest postRequest, String email) {
+
+
+        User sessionUser = userRepository.findUserByEmail(email).get();
+        Post post = postRepository.getPostById(ID);
+        Map<String, Object> fullResponse = isValidTextAndTitle(postRequest.getText(), postRequest.getTitle());
+        if ((boolean) fullResponse.get("result")) {
+            postRepository.save(buildPost(postRequest, post, sessionUser, convertTags(postRequest.getTags())));
+        }
+        return fullResponse;
     }
 
-    private List<Post> getPostsByModeratingStatus(int offset, int limit, String status, int id) {
-        Pageable pageable = PageRequest.of(offset, limit);
+    public Map<String, Object> editPostStatus(ModeratorDecisionRequest moderatorDecisionRequest, String email) {
+        Post post = postRepository.getPostById(moderatorDecisionRequest.getPostId());
+        Optional<User> optionalUser = userRepository.findUserByEmail(email);
+        String decision = moderatorDecisionRequest.getDecision();
+        User user = new User();
+        if (optionalUser.isPresent()) {
+            user = optionalUser.get();
+        } else {
+            return Map.of("result", false);
+        }
+        if (post != null) {
+            if (decision.equals("accept")) {
+                post.setModerationStatus(Status.ACCEPTED);
+                post.setModeratedBy(user);
+                postRepository.save(post);
+            } else if (decision.equals("decline")) {
+                post.setModerationStatus(Status.DECLINED);
+                post.setModeratedBy(user);
+                postRepository.save(post);
+            }
+        }
+        return Map.of("result", true);
+    }
+
+    private Map<String, Object> isValidTextAndTitle(String text, String title) {
+
+        Map<String, Object> fullResponse = new LinkedHashMap<>();
+        boolean result = true;
+        Map<String, String> errorResponse = new LinkedHashMap<>();
+        if (title.isEmpty()) {
+            result = false;
+            errorResponse.put("title", "Заголовок не установлен");
+        } else if (title.length() < 3) {
+            result = false;
+            errorResponse.put("title", "Заголовок слишком короткий");
+        }
+
+        if (text.isEmpty()) {
+            result = false;
+            errorResponse.put("text", "Текст не установлен");
+        } else if (text.length() < 50) {
+            result = false;
+            errorResponse.put("text", "Текст слишком короткий");
+        }
+        fullResponse.put("result", result);
+        if (!result) {
+            fullResponse.put("errors", errorResponse);
+        }
+        return fullResponse;
+    }
+
+
+
+    private Post buildPost(PostRequest postRequest, Post post, User user, List<Tag> tags) {
+        Post newPost = post == null ? new Post() : post;
+        LocalDateTime localDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(postRequest.getTimestamp()),
+                TimeZone.getDefault().toZoneId());
+        LocalDateTime now = LocalDateTime.now();
+        if (localDateTime.isBefore(now)) {
+            localDateTime = now;
+        }
+        newPost.setTime(localDateTime);
+        newPost.setIsActive((byte) postRequest.getActive());
+        newPost.setTitle(postRequest.getTitle());
+        newPost.setText(postRequest.getText());
+        if (newPost.getId() == 0) {
+            newPost.setUser(user);
+        }
+        if (post == null || ((user.getIsModerator() == 0) && newPost.getUser().equals(user))) {
+            if(!settingsService.getGlobalSettings().isPostPreModeration()){
+                newPost.setModerationStatus(Status.ACCEPTED);
+            }
+            else{
+                newPost.setModerationStatus(Status.NEW);
+            }
+        }
+
+
+        newPost.setTagList(tags);
+
+        return post;
+    }
+
+    //TODO:MAPPER
+    private List<Tag> convertTags(List<String> tagList) {
+        List<Tag> tags = new ArrayList<>();
+        for (String tagName : tagList) {
+            Optional<Tag> optionalTag = tagRepository.findByName(tagName);
+            Tag tag;
+            if (optionalTag.isPresent()) {
+                tag = optionalTag.get();
+                tags.add(tag);
+            } else {
+                tag = new Tag();
+                tag.setName(tagName);
+                tags.add(tag);
+            }
+        }
+        return tags;
+    }
+
+
+    private Page<Post> getPostsByUserStatus(int offset, int limit, String status, int id) {
+
+        Pageable pageable = PageRequest.of(offset / limit, limit);
+
+        if (status.equals("inactive")) {
+            return postRepository.getMyNotActivePosts(id, pageable);
+        }
+        String stat = status.equals("pending") ? "NEW" : status;
+        return postRepository.getMyActivePosts(stat, id, pageable);
+    }
+
+
+    private Page<Post> getPostsByModeratingStatus(int offset, int limit, String status, int id) {
+        Pageable pageable = PageRequest.of(offset / limit, limit);
         Page<Post> posts;
         switch (status) {
 
@@ -175,29 +316,9 @@ public class PostService {
 
         }
 
-        return posts.getContent();
+        return posts;
     }
 
-    private int getCountOfModerationPost(int id, String status) {
-        int count = 0;
-        switch (status) {
-
-
-            case "accepted":
-                count = postRepository.getCountOfModerationPostByMeAccepted(id);
-                break;
-            case "declined":
-                count = postRepository.getCountOfModerationPostByMeDeclined(id);
-                break;
-            default:
-                count = postRepository.getCountOfModerationPost();
-                break;
-
-
-        }
-        return count;
-
-    }
 
     //TODO: MAPPER
     private PostByID convertToPostByID(Post post) {
@@ -246,8 +367,8 @@ public class PostService {
 
 
     //TODO:MAPPER
-    private CountPostsResponse convertToPostResponse(List<Post> postList, int offset,
-                                                     int limit, int countOfActivePosts) {
+    private CountPostsResponse convertToPostResponse(List<Post> postList,
+                                                     int countOfActivePosts) {
         List<PostResponse> responsePostsList = new ArrayList<>();
         for (Post post : postList) {
             PostResponse postResponse = new PostResponse();
@@ -257,10 +378,14 @@ public class PostService {
 
             postResponse.setUser(new UserResponse(user.getId(), user.getName()));
             postResponse.setTitle(post.getTitle());
-            postResponse.setAnnounce(post.getText()
-                    .replaceAll("<(.*?)>", "")
-                    .replaceAll("[\\p{P}\\p{S}]", "")
-                    .substring(0, 150) + "...");
+            String text = post.getText();
+            if (text.length() > 150) {
+                text = text
+                        .replaceAll("<(.*?)>", "")
+                        .replaceAll("[\\p{P}\\p{S}]", "")
+                        .substring(0, 150) + "";
+            }
+            postResponse.setAnnounce(text);
 
 
             postResponse.setLikeCount(getCountLikes(post.getId(), (byte) 1));
@@ -273,11 +398,11 @@ public class PostService {
 
         CountPostsResponse countPostsResponse = new CountPostsResponse();
         countPostsResponse.setCount(countOfActivePosts);
-        countPostsResponse.setPosts(getLimitOffsetPost(responsePostsList, offset, limit));
+        countPostsResponse.setPosts(responsePostsList);
         return countPostsResponse;
     }
 
-    //TODO:MAPPER
+
     private Integer getCountLikes(int postId, byte value) {
         Integer countLikes = 0;
         Optional<Integer> countOfLikes = postVotesRepository.findCountOfLikes(postId, value);
@@ -287,7 +412,7 @@ public class PostService {
         return countLikes;
     }
 
-    //TODO:MAPPER
+
     private Integer getCountComments(int postId) {
         Integer countComments = 0;
         Optional<Integer> countOfComments = postCommentsRepository.getCountOfCommentsByPostId(postId);
@@ -297,8 +422,8 @@ public class PostService {
         return countComments;
     }
 
-    private List<Post> getSortedPosts(int offset, int limit, String mode, LocalDateTime time) {
-        Pageable pageable = PageRequest.of(offset, limit);
+    private Page<Post> getSortedPosts(int offset, int limit, String mode, LocalDateTime time) {
+        Pageable pageable = PageRequest.of(offset / limit, limit);
         Page<Post> posts;
         switch (mode) {
             case "popular":
@@ -315,19 +440,8 @@ public class PostService {
 
         }
 
-        return posts.getContent();
+        return posts;
     }
 
-    private List<PostResponse> getLimitOffsetPost(List<PostResponse> postList, int offset, int limit) {
-        List<PostResponse> limitedListPosts = new ArrayList<>();
-        if (offset > limit || offset > postList.size()) {
-            return limitedListPosts;
-        } else if (limit + offset <= postList.size()) {
-            limitedListPosts = postList.subList(offset, offset + limit);
-            return limitedListPosts;
-        }
-        limitedListPosts = postList.subList(offset, postList.size());
-        return limitedListPosts;
 
-    }
 }
