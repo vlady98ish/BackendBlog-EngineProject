@@ -2,21 +2,16 @@ package main.model.repository;
 
 
 import main.model.Post;
-import main.model.Status;
+import main.model.User;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Repository;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 
 @Repository
@@ -56,12 +51,9 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
             " and p.time<=?1")
     Integer getCountOfActivePost(LocalDateTime time);
 
+
+
     /* GET api/post/search*/
-    @Query("Select count(p) from Post as p" +
-            " where p.isActive = 1 " +
-            "and p.moderationStatus = 'ACCEPTED' " +
-            "and p.time<=?1 and p.text LIKE %?2%")
-    Integer getCountOfQueryPost(LocalDateTime time, String query);
 
 
     @Query("From Post as post " +
@@ -77,6 +69,15 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
             "and post.moderationStatus = 'ACCEPTED' " +
             "and post.time<=?1")
     List<Post> getActivePosts(LocalDateTime time);
+
+
+
+
+    @Query("From Post as post " +
+            "WHERE post.isActive = 1 " +
+            "and post.moderationStatus = 'ACCEPTED' " +
+            "and post.time<=?1")
+    Page<Post> getActivePostsPage(LocalDateTime time, Pageable pageable);
 
 
     /*GET api/post/byTag*/
@@ -101,7 +102,7 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
             "and p.moderationStatus = 'ACCEPTED' " +
             "and p.time <= ?1 " +
             "and p.id = ?2")
-    Post getPostById(LocalDateTime time, int id);
+    Post getPostByIdAndTime(LocalDateTime time, int id);
 
 
     @Query(" from Post as p " +
@@ -109,10 +110,12 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
             " and p.isActive = 1")
     Page<Post> getPostModerator(Pageable pageable);
 
-    @Query("Select count(p) from Post  as p" +
-            " where p.isActive = 1 " +
-            "and p.moderationStatus = 'NEW'")
-    Integer getCountOfModerationPost();
+
+    @Query("Select count(p) from Post as p" +
+            " where p.moderationStatus = 'NEW'" +
+            " and p.isActive = 1")
+    int countModeratedPost();
+
 
     //TODO:Попытаться сократить функции
     @Query(" from Post as p " +
@@ -127,18 +130,6 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
             "and p.moderatedBy.id = ?1")
     Page<Post> getPostByMeDeclined(int id, Pageable pageable);
 
-    @Query("Select count(p) from Post  as p " +
-            "where p.isActive = 1 " +
-            "and p.moderationStatus = 'ACCEPTED' " +
-            "and p.moderatedBy.id = ?1")
-    Integer getCountOfModerationPostByMeAccepted(int id);
-
-    @Query("Select count(p) from Post  as p " +
-            "where p.isActive = 1 " +
-            "and p.moderationStatus = 'ACCEPTED' " +
-            "and p.moderatedBy.id = ?1")
-    Integer getCountOfModerationPostByMeDeclined(int id);
-
 
     /*My Posts*/
     @Query(value = "SELECT * FROM posts p " +
@@ -148,13 +139,7 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
             "ORDER BY p.time DESC", nativeQuery = true)
     Page<Post> getMyActivePosts(String status, int userId, Pageable pageable);
 
-    @Query(value = "SELECT count(*) FROM posts p " +
-            "WHERE p.user_id = ?2 " +
-            "AND p.is_active = 1 " +
-            "AND p.moderation_status = ?1 " +
-            "ORDER BY p.time DESC", nativeQuery = true
-    )
-    Integer countMyActivePost(String status, int userId);
+
 
     @Query(value = "SELECT * FROM posts  p " +
             "WHERE p.user_id = ?1 " +
@@ -162,10 +147,19 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
             "ORDER BY p.time DESC", nativeQuery = true)
     Page<Post> getMyNotActivePosts(int userId, Pageable pageable);
 
-    @Query(value = "SELECT count(*) FROM posts   p " +
-            "WHERE p.user_id = ?1 " +
-            "AND p.is_active = 0 " +
-            "ORDER BY p.time DESC", nativeQuery = true)
-    Integer countMyNotActivePosts(int id);
+    Post getPostById(int userId);
+
+
+
+
+
+
+
+    @Query("SELECT SUM(p.viewCount) FROM Post p WHERE (:user IS NULL OR p.user = :user)")
+    int getViewsByUser(@Param("user") User user);
+
+
+
+
 
 }

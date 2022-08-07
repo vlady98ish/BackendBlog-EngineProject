@@ -1,5 +1,6 @@
 package main.api.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -30,7 +31,7 @@ public class PostByID {
     private Integer dislikeCount;
 
     private Integer viewCount;
-
+    @JsonProperty("comments")
     private List<CommentsResponse> postComments;
 
     private List<String> tags;

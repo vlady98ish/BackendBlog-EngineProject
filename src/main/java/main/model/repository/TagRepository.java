@@ -7,14 +7,15 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-
+import java.util.Optional;
 
 
 @Repository
 public interface TagRepository extends JpaRepository<Tag,Integer> {
     @Query("FROM Tag as tag where tag.name Like ?1%")
-    List<Tag> findByName(String name);
+    List<Tag> findAllByName(String name);
 
+    Optional<Tag> findByName(String name);
 
 
 

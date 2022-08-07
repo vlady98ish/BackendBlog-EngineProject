@@ -11,10 +11,11 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
+
 @Table(name = "posts")
 public class Post {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     @Column(name = "is_active")
     private byte isActive;
