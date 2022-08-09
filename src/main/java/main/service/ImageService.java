@@ -1,7 +1,7 @@
 package main.service;
 
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -11,7 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.awt.image.BufferedImageOp;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -22,20 +22,20 @@ import java.util.Map;
 
 
 @Service
-@AllArgsConstructor
+
 public class ImageService {
-    private final int IMAGE_WIDTH = 36;
-    private final int IMAGE_HEIGHT = 36;
-    @Autowired
-    private AuthService authService;
+    private static final int IMAGE_WIDTH = 36;
+    private static final int IMAGE_HEIGHT = 36;
+
+
 
     public ResponseEntity<?> postImage(MultipartFile image) throws IOException {
         Map<String, Object> errors = new LinkedHashMap<>();
         Map<String, Object> responseMap = new LinkedHashMap<>();
 
 
-        int MAX_SIZE = 1_000_000;
-        if (image.getSize() <= MAX_SIZE) {
+        int maxSize = 1_000_000;
+        if (image.getSize() <= maxSize) {
             File convertedImage = saveImage(image, false);
             String destination = StringUtils.cleanPath(convertedImage.getPath());
             if (!destination.endsWith("jpg") && !destination.endsWith("png")) {

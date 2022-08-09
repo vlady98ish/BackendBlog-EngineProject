@@ -83,7 +83,7 @@ public class AuthController {
     }
 
     @PostMapping("/password")
-    public ResponseEntity<?> password(@RequestBody CodeRequest codeRequest) {
+    public ResponseEntity<Map<String, Object>> password(@RequestBody CodeRequest codeRequest) {
         return ResponseEntity.ok(authService.password(codeRequest));
     }
 }

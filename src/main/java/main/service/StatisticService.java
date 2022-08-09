@@ -1,23 +1,26 @@
 package main.service;
 
+import lombok.AllArgsConstructor;
 import main.api.response.StatisticResponse;
 import main.model.Post;
 import main.model.PostVote;
 import main.model.User;
-import main.model.repository.GlobalSettingsRepository;
+
 import main.model.repository.PostRepository;
 import main.model.repository.PostVotesRepository;
 import main.model.repository.UserRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
+
 import java.util.List;
 import java.util.Optional;
 
 @Service
+
 public class StatisticService {
 
     @Autowired
@@ -71,8 +74,8 @@ public class StatisticService {
     }
 
     private StatisticResponse convertToResponse(User user) {
-        List<PostVote> postVoteList = new ArrayList<>();
-        List<Post> postList = new ArrayList<>();
+        List<PostVote> postVoteList;
+        List<Post> postList;
         postList = user.getPosts();
         postVoteList = user.getPostVotes();
         int likeCount = 0;

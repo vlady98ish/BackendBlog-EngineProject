@@ -28,7 +28,7 @@ public class PostController {
 
 
     @GetMapping("")
-//    @PreAuthorize("hasAuthority('user:write')")
+
     public ResponseEntity<CountPostsResponse> getPosts(@RequestParam(defaultValue = "0") int offset,
                                                        @RequestParam(defaultValue = "10") int limit,
                                                        @RequestParam(defaultValue = "recent") String mode) {
@@ -37,7 +37,7 @@ public class PostController {
     }
 
     @GetMapping("/search")
-//    @PreAuthorize("hasAuthority('user:moderate')")
+
     public ResponseEntity<CountPostsResponse> getPostByQuery(@RequestParam String query,
                                                              @RequestParam(defaultValue = "0") int offset,
                                                              @RequestParam(defaultValue = "6") int limit) {
@@ -61,9 +61,13 @@ public class PostController {
         return ResponseEntity.ok(postService.getPostByTag(tag, offset, limit));
     }
 
-    @GetMapping("/{ID}")
-    public ResponseEntity<PostByID> getPostById(@PathVariable int ID, Principal principal) {
-        PostByID postByID = postService.getPostBtId(ID, principal.getName());
+    @GetMapping("/{id}")
+    public ResponseEntity<PostByID> getPostById(@PathVariable int id, Principal principal) {
+        String name ="";
+        if(principal != null){
+            name = principal.getName();
+        }
+        PostByID postByID = postService.getPostBtId(id, name);
 
         return postByID != null ? ResponseEntity.ok(postByID) : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
@@ -86,10 +90,10 @@ public class PostController {
         return ResponseEntity.ok(postService.postPost(postRequest, principal.getName()));
     }
 
-    @PutMapping("/{ID}")
+    @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('user:write')")
-    public ResponseEntity<?> redactPostById(@PathVariable int ID, @RequestBody PostRequest postRequest, Principal principal) {
-        return ResponseEntity.ok(postService.getRedactPostById(ID, postRequest, principal.getName()));
+    public ResponseEntity<?> redactPostById(@PathVariable int id, @RequestBody PostRequest postRequest, Principal principal) {
+        return ResponseEntity.ok(postService.getRedactPostById(id, postRequest, principal.getName()));
     }
 
     @PostMapping("/like")

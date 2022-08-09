@@ -8,6 +8,7 @@ import main.model.User;
 import main.model.repository.PostCommentsRepository;
 import main.model.repository.PostRepository;
 import main.model.repository.UserRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 
@@ -19,10 +20,10 @@ import java.util.Map;
 import java.util.Optional;
 
 @Service
-@AllArgsConstructor
+
 public class CommentService {
-    private final int MIN = 10;
-    private final int MAX = 300;
+    private static final int MIN = 10;
+    private  static final int MAX = 300;
 
     @Autowired
     private PostCommentsRepository postCommentsRepository;

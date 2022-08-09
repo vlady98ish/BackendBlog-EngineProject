@@ -24,7 +24,7 @@ public class StatisticsController {
 
     @GetMapping("/my")
     @PreAuthorize("hasAuthority('user:write')")
-    public ResponseEntity<?> getMyStatistics(Principal principal) {
+    public ResponseEntity<StatisticResponse> getMyStatistics(Principal principal) {
         return ResponseEntity.ok(statisticService.getMyStatistics(principal.getName()));
     }
 

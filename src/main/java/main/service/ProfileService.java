@@ -1,10 +1,12 @@
 package main.service;
 
 
+import lombok.AllArgsConstructor;
 import main.model.User;
 import main.model.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -12,11 +14,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
+
 public class ProfileService {
     @Autowired
     private ImageService imageService;
@@ -33,13 +34,13 @@ public class ProfileService {
         Map<String, String> errors = new LinkedHashMap<>();
         Optional<User> optionalUser = userRepository.findUserByEmail(userEmail);
         if (optionalUser.isEmpty()) {
-            return null;
+            return Collections.emptyMap();
         }
         User user = optionalUser.get();
 
         if (photo != null) {
-            int MAX_SIZE = 5_000_000;
-            if (photo.getBytes().length <= MAX_SIZE) {
+            int maxSize = 5_000_000;
+            if (photo.getBytes().length <= maxSize) {
                 if (removePhoto == 1) {
                     user.setPhoto("");
                 } else {
@@ -103,7 +104,7 @@ public class ProfileService {
     }
 
     private boolean changePassword(String password) {
-        return !(password.length() < 6);
+        return password.length() >= 6;
     }
 
 }

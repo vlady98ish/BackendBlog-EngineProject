@@ -20,7 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.security.Principal;
-import java.time.LocalDateTime;
+
 import java.util.List;
 import java.util.Map;
 
@@ -85,7 +85,7 @@ public class GeneralController {
 
     @PostMapping("/moderation")
     @PreAuthorize("hasAuthority('user:moderate')")
-    public ResponseEntity<?> postModeration(@RequestBody ModeratorDecisionRequest moderatorDecisionRequest, Principal principal) {
+    public ResponseEntity<Map<String, Object>> postModeration(@RequestBody ModeratorDecisionRequest moderatorDecisionRequest, Principal principal) {
         return ResponseEntity.ok(postService.editPostStatus(moderatorDecisionRequest, principal.getName()));
     }
 
@@ -98,7 +98,7 @@ public class GeneralController {
 
     @PostMapping(value = "/profile/my", consumes = {MediaType.APPLICATION_JSON_VALUE})
     @PreAuthorize("hasAuthority('user:write')")
-    public ResponseEntity<?> updateMyProfile(@RequestBody ProfileRequest profileRequest, Principal principal) throws IOException {
+    public ResponseEntity<Map<String, Object>> updateMyProfile(@RequestBody ProfileRequest profileRequest, Principal principal) throws IOException {
         return ResponseEntity.ok(profileService.postMyProfile(profileRequest.getPhoto(),
                 profileRequest.getEmail(),
                 profileRequest.getName(),
@@ -109,7 +109,7 @@ public class GeneralController {
 
     @PostMapping(value = "/profile/my", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     @PreAuthorize("hasAuthority('user:write')")
-    public ResponseEntity<?> updateMyProfileWithPhoto(@RequestParam("photo") MultipartFile photo,
+    public ResponseEntity<Map<String, Object>> updateMyProfileWithPhoto(@RequestParam("photo") MultipartFile photo,
                                                       @RequestParam("removePhoto") int removePhoto,
                                                       @RequestParam("name") String name,
                                                       @RequestParam("email") String email,

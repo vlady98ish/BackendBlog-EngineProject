@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import main.api.response.CalendarResponse;
 import main.model.Post;
 import main.model.repository.PostRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,7 +15,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-@AllArgsConstructor
+
 public class CalendarService {
     @Autowired
     private PostRepository postRepository;
@@ -47,7 +48,7 @@ public class CalendarService {
 
     private List<Integer> getListOfYears(List<Post> postList) {
         List<Integer> yearsList;
-        yearsList = postList.stream().map(Post -> Post
+        yearsList = postList.stream().map(post -> post
                         .getTime()
                         .getYear())
                 .distinct()

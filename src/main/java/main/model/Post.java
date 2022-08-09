@@ -19,7 +19,7 @@ public class Post {
     private int id;
     @Column(name = "is_active")
     private byte isActive;
-     //TODO: По умолчанию поставить NEW
+
 
     @Column(name = "moderation_status", nullable = false)
     @Enumerated(EnumType.STRING)

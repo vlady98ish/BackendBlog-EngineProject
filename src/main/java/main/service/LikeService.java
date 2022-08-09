@@ -1,11 +1,13 @@
 package main.service;
 
+import lombok.AllArgsConstructor;
 import main.model.Post;
 import main.model.PostVote;
 import main.model.User;
 import main.model.repository.PostRepository;
 import main.model.repository.PostVotesRepository;
 import main.model.repository.UserRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +16,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @Service
+
 public class LikeService {
 
 
@@ -24,9 +27,9 @@ public class LikeService {
     @Autowired
     private PostRepository postRepository;
 
-    public Map<String, Object> postLike(Integer post_id, String email) {
+    public Map<String, Object> postLike(Integer postId, String email) {
         Optional<User> userOptional = userRepository.findUserByEmail(email);
-        Post post = postRepository.getOne(post_id);
+        Post post = postRepository.getOne(postId);
         if (userOptional.isPresent()) {
             User user = userOptional.get();
             PostVote postVote = postVotesRepository.findByUserAndPost(user, post);
@@ -52,9 +55,9 @@ public class LikeService {
 
     }
 
-    public Map<String, Object> postDisLike(Integer post_id, String email) {
+    public Map<String, Object> postDisLike(Integer postId, String email) {
         Optional<User> userOptional = userRepository.findUserByEmail(email);
-        Post post = postRepository.getOne(post_id);
+        Post post = postRepository.getOne(postId);
         if (userOptional.isPresent()) {
             User user = userOptional.get();
             PostVote postVote = postVotesRepository.findByUserAndPost(user, post);

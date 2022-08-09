@@ -6,19 +6,19 @@ import lombok.AllArgsConstructor;
 import main.api.request.CodeRequest;
 import main.api.request.LoginRequest;
 import main.api.request.RegisterRequest;
-import main.api.response.AuthResponse;
+
 import main.api.response.LoginResponse;
 import main.api.response.UserLoginResponse;
 import main.model.CaptchaCode;
 import main.model.User;
 import main.model.repository.CaptchaCodeRepository;
-import main.model.repository.GlobalSettingsRepository;
+
 import main.model.repository.PostRepository;
 import main.model.repository.UserRepository;
-import org.apache.commons.io.FileUtils;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
-import org.springframework.http.ResponseEntity;
+
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -28,20 +28,21 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import java.net.InetAddress;
+
 import java.time.LocalDateTime;
 import java.util.*;
 
 
 @Service
-@AllArgsConstructor
+
 public class AuthService {
-    @Autowired
-    private Environment environment;
+
+
     @Autowired
     private UserRepository userRepository;
     @Autowired
@@ -196,11 +197,9 @@ public class AuthService {
 
         user.setCode(code);
         userRepository.save(user);
-        final String port = "8080";
-        final String hostName = InetAddress.getLoopbackAddress().getHostName();
-        final String url = String.format("http://%s:%s", hostName, port);
-        emailService.send(email, "Restore password", String.format("Для восстановления пароля, " +
-                "пройдите по этой ссылке: %s/login/change-password/%s", url, code));
+        String baseUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
+        String link = baseUrl + "/login/change-password/" + code;
+        emailService.send(email, "Restore password", link);
         return Map.of("result", true);
 
 

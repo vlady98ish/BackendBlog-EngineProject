@@ -5,12 +5,13 @@ import main.api.request.SettingsRequest;
 import main.api.response.SettingsResponse;
 import main.model.GlobalSettings;
 import main.model.repository.GlobalSettingsRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-@AllArgsConstructor
+
 public class SettingsService {
     @Autowired
     private GlobalSettingsRepository globalSettingsRepository;

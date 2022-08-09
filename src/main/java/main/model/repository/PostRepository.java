@@ -117,7 +117,7 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
     int countModeratedPost();
 
 
-    //TODO:Попытаться сократить функции
+
     @Query(" from Post as p " +
             "where p.moderationStatus = 'ACCEPTED'" +
             " and p.isActive = 1 " +
