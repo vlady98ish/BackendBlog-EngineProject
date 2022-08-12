@@ -25,7 +25,7 @@ A blog's backend project. Basically, the project involves writing a server progr
 </ul>
 
 <h2>AWS  Link</h2>
-<a href="http://blockengine.eu-central-1.elasticbeanstalk.com//">Visit Dev Blog WebSite!</a>
+<a href="http://blockengine.eu-central-1.elasticbeanstalk.com/">Visit Dev Blog WebSite!</a>
 
 
 
