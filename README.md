@@ -1,5 +1,11 @@
 # BackendBlog-EngineProject
-A blog's backend project. Basically, the project involves writing a server program that processes requests correctly from the front end. Java is used in this project. Spring framework is used for web applications based on Rest APIs. Hibernate is used for databases. In addition to MySQL, the project also includes the implementation of relations by type (One-to-One, Many-to-One, and Others). To include all dependencies for a project, Maven is used, and JUnit is used to test the project.  In order to reduce code and increase functionality, the Lombok library is used.
+This backend project for a blog is built using Java v.11, Spring Boot, and Spring Security for reliable and secure web application development. Maven is used for project management, while Git is utilized for version control.
+
+The project also includes MySQL 8 for efficient data management, and Hibernate for object-relational mapping. Jakarta Mail is used for email notifications, while Lombok is used for simplified Java code generation.
+
+The project architecture follows the MVC pattern for separation of concerns, while also implementing RESTful API for easy communication with the front-end. Additionally, a Captcha generator is integrated for enhanced security.
+
+Finally, the project is deployed on AWS for efficient and scalable hosting, ensuring optimal performance for users.
 
 
 <h2>Main Techonologies:</h2>
