@@ -1,5 +1,7 @@
 # Backend Blog Engine Project
 
+![Backend Blog Engine Project Screenshot](https://github.com/vlady98ish/BackendBlog-EngineProject/blob/master/mock.png)
+
 This backend project for a blog is built using Java v.11, Spring Boot, and Spring Security for reliable and secure web application development. Maven is used for project management, while Git is utilized for version control.
 
 The project also includes MySQL 8 for efficient data management, and Hibernate for object-relational mapping. Jakarta Mail is used for email notifications, while Lombok is used for simplified Java code generation.
