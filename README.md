@@ -1,4 +1,5 @@
-# BackendBlog-EngineProject
+# Backend Blog Engine Project
+
 This backend project for a blog is built using Java v.11, Spring Boot, and Spring Security for reliable and secure web application development. Maven is used for project management, while Git is utilized for version control.
 
 The project also includes MySQL 8 for efficient data management, and Hibernate for object-relational mapping. Jakarta Mail is used for email notifications, while Lombok is used for simplified Java code generation.
@@ -7,31 +8,40 @@ The project architecture follows the MVC pattern for separation of concerns, whi
 
 Finally, the project is deployed on AWS for efficient and scalable hosting, ensuring optimal performance for users.
 
+## Main Technologies
 
-<h2>Main Techonologies:</h2>
-<ul>
-  <li>Java v.11</li>
-  <li>Spring Boot</li>
-  <li>Spring Security</li>
-  <li>Maven</li>
-  <li>Git</li>
-  <li>MySQL 8 </li>
-</ul>
+- Java v.11
+- Spring Boot
+- Spring Security
+- Maven
+- Git
+- MySQL 8
 
-<h2>Features and Expirience:</h2>
-<ul>
-  <li>Hibernate</li>
-  <li>Jakarta Mail</li>
-  <li>Captcha Generator</li>
-  <li>Lombok</li>
-  <li>MVC Pattern</li>
-  <li>RESTful API</li>
-  <li>AWS</li>
-  
-</ul>
+## Features and Experience
 
-<h2>AWS  Link</h2>
-<a href="http://blockengine.eu-central-1.elasticbeanstalk.com/">Visit Dev Blog WebSite!</a>
+- Hibernate
+- Jakarta Mail
+- Captcha Generator
+- Lombok
+- MVC Pattern
+- RESTful API
+- AWS
 
+Check out the [AWS deployment](http://blockengine.eu-central-1.elasticbeanstalk.com/posts/recent) to see the project in action!
 
+Visit my [LinkedIn](https://www.linkedin.com/in/vladyslav-ishchenko-104760236/) for more information and updates.
 
+## Installation
+
+To get started with the app, clone this repository and navigate to the project directory:
+
+```bash
+git clone https://github.com/your-github-username/backend-blog-engine-project.git
+cd backend-blog-engine-project
+mvn install
+mvn spring-boot:run
+```
+The app will be available at http://localhost:8080/.
+
+License
+This project is licensed under the MIT License.
