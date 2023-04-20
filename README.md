@@ -29,7 +29,7 @@ Finally, the project is deployed on AWS for efficient and scalable hosting, ensu
 - RESTful API
 - AWS
 
-Check out the [AWS deployment](http://blockengine.eu-central-1.elasticbeanstalk.com/posts/recent) to see the project in action!
+Check out the [AWS deployment](http://blockengine.eu-central-1.elasticbeanstalk.com/) to see the project in action!
 
 Visit my [LinkedIn](https://www.linkedin.com/in/vladyslav-ishchenko-104760236/) for more information and updates.
 
